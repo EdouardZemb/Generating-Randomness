@@ -69,20 +69,41 @@ def main():
     # Calculate and display the triad counts
     triad_freq = calculate_triad_frequencies(final_data_string)
 
-    test_input = fetch_test_data()
+    print("""You have $1000. Every time the system successfully predicts your next press, you lose $1.
+Otherwise, you earn $1. Print "enough" to leave the game. Let's go!\n""")
+    remaining_cash = 1000
 
-    predictions = predict_next_characters(test_input, triad_freq)
+    while remaining_cash > 0:
+        test_input = fetch_test_data()
+        if test_input == "enough":
+            break
+        else:
+            test_input = filter_binary_characters(test_input)
 
-    correct, total, accuracy = evaluate_accuracy(test_input, predictions)
+        predictions = predict_next_characters(test_input, triad_freq)
 
-    print(f"predictions:\n{predictions}")
-    print(f"Computer guessed right {correct} out of {total} symbols ({accuracy:.2f} %)")
+        correct, total, accuracy = evaluate_accuracy(test_input, predictions)
+
+        computer_wins = correct
+        player_wins = total - correct
+        if computer_wins > player_wins:
+            remaining_cash -= computer_wins - player_wins
+        elif computer_wins < player_wins:
+            remaining_cash += player_wins - computer_wins
+
+        print(f"predictions:\n{predictions}")
+        print(f"Computer guessed {correct} out of {total} symbols right ({accuracy:.2f} %)")
+        print(f"Your balance is now ${remaining_cash}")
+        print()
+
+    print("Game over!")
 
 
 def fetch_random_data():
     # Initialize an empty list to store the binary digits
     binary_list = []
     # Continue fetching input until the list reaches the desired length
+    print("Please provide AI some data to learn...\nThe current data length is 0, 100 symbols left")
     while len(binary_list) < MIN_LENGTH:
         user_input = input("Print a random string containing 0 or 1:\n")
         filtered_input = filter_binary_characters(user_input)
@@ -92,7 +113,7 @@ def fetch_random_data():
 
         # Calculate and display the remaining symbols needed
         remaining_symbols = MIN_LENGTH - len(binary_list)
-        print(f"Current data length is {len(binary_list)}, {remaining_symbols} symbols left")
+        print(f"The current data length is {len(binary_list)}, {remaining_symbols} symbols left")
     # Convert the binary list to a string and display the final result
     final_data_string = "".join(binary_list)
     return final_data_string
@@ -101,8 +122,8 @@ def fetch_random_data():
 def fetch_test_data():
     test_input = ""
     while len(test_input) < 4:
-        test_input = input("Please enter a test string containing 0 or 1:\n")
-    return filter_binary_characters(test_input)
+        test_input = input("Print a random string containing 0 or 1:\n")
+    return test_input
 
 
 if __name__ == "__main__":
